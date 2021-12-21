@@ -22,7 +22,7 @@
                     {% for servico in servicos %}
                         <tr>
                             <td>{{servico.nome}}</td>
-                            <td>{{servico.valor_minimo}}</td>
+                            <td>R$ {{servico.valor_minimo}}</td>
                             <td><a href="{% url 'editar_servico' servico.id %}">Editar</a></td>
                         </tr>
                     {% endfor %}
