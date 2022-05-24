@@ -25,3 +25,8 @@ def listar_diaristas_cidade(cep):
         return cidade.usuario.filter(tipo_usuario=2).order_by('-reputacao')
     except CidadesAtendimento.DoesNotExist:
         return []
+
+
+def verificar_disponibilidade_cidade(cep):
+    codigo_ibge = buscar_cidade_cep(cep)['ibge']
+    return CidadesAtendimento.objects.filter(codigo_ibge=codigo_ibge).exists()
