@@ -1,22 +1,23 @@
 import os
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, UserManager
 from django.core.validators import validate_image_file_extension
 from localflavor.br.models import BRCPFField
 import uuid
+from .managers.diarista_manager import DiaristaManager
 
 
 def nome_arquivo_foto(instancia, filename):
     ext = filename.split('.')[-1]
     filename = '%s.%s' % (uuid.uuid4(), ext)
 
-    return os.path.join('usuarios', filename)
+    return os.path.join('img', 'usuarios', filename)
 
 def nome_arquivo_documento(instancia, filename):
     ext = filename.split('.')[-1]
     filename = '%s.%s' % (uuid.uuid4(), ext)
 
-    return os.path.join('documentos', filename)
+    return os.path.join('img', 'documentos', filename)
 
 class Usuario(AbstractUser):
     TIPO_USUARIO_CHOICES = (
@@ -24,6 +25,7 @@ class Usuario(AbstractUser):
         (2, "Diarista"),
     )
 
+    username=None
     nome_completo = models.CharField(max_length=255, null=True, blank=False)
     cpf = BRCPFField(null=True, unique=True)
     nascimento = models.DateField(null=True, blank=False)
@@ -32,11 +34,14 @@ class Usuario(AbstractUser):
     tipo_usuario = models.IntegerField(choices=TIPO_USUARIO_CHOICES, null=True, blank=False)
     reputacao = models.FloatField(null=True, blank=False, default=5)
     chave_pix = models.CharField(null=True, blank=True, max_length=255)
-    foto_documento = models.ImageField(null=True, upload_to=nome_arquivo_foto, validators=[validate_image_file_extension,])
-    foto_usuario = models.ImageField(null=True, upload_to=nome_arquivo_documento, validators=[validate_image_file_extension,])
+    foto_documento = models.ImageField(null=True, upload_to=nome_arquivo_documento, validators=[validate_image_file_extension,])
+    foto_usuario = models.ImageField(null=True, upload_to=nome_arquivo_foto, validators=[validate_image_file_extension,])
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['nome_completo', 'cpf', 'nascimento', 'telefone', 'tipo_usuario', 'reputacao', 'chave_pix', 'foto_documento', 'foto_usuario']
+
+    objects = UserManager()
+    diarista_objects = DiaristaManager()
 
 
 class CidadesAtendimento(models.Model):
