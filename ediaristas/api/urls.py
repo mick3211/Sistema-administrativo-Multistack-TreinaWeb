@@ -6,6 +6,7 @@ from .views import (diaristas_localidade_view,
                     inicio_view,
                     usuario_view,
                     me_view,
+                    diaria_view
                     )
 
 urlpatterns = [
@@ -16,4 +17,5 @@ urlpatterns = [
     path('servicos', servico_view.Servico.as_view(), name='servico-list'),
     path('usuarios', usuario_view.Usuario.as_view(), name='usuario-list'),
     path('me', me_view.Me.as_view(), name='me-list'),
+    path('diarias', diaria_view.DiariaView.as_view(), name='diaria-list'),
 ]
