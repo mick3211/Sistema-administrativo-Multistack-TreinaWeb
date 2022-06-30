@@ -1,7 +1,9 @@
-from rest_framework.serializers import ModelSerializer, DecimalField, ValidationError
+from django.urls import reverse
+from rest_framework.serializers import ModelSerializer, DecimalField, ValidationError, SerializerMethodField
 from ..models import Diaria, Usuario
 from administracao.services.servico_service import listar_servico_id
 from ..services.cidades_atendimento_service import verificar_disponibilidade_cidade, buscar_cidade_ibge
+from ..hateoas import Hateoas
 
 
 class UsuarioDiariaSerializer(ModelSerializer):
@@ -13,6 +15,8 @@ class UsuarioDiariaSerializer(ModelSerializer):
 class DiariaSerializer(ModelSerializer):
     cliente = UsuarioDiariaSerializer(read_only=True)
     valor_comissao = DecimalField(read_only=True, max_digits=5, decimal_places=2)
+    links = SerializerMethodField(required=False)
+
     class Meta:
         models = Diaria
         fields = '__all__'
@@ -74,3 +78,11 @@ class DiariaSerializer(ModelSerializer):
         client_id = self.context['request'].user.id
         diaria = Diaria.objects.create(client_id=client_id, valor_comissao=valor_comissao, **validated_data)
         return diaria
+
+    def get_links(self, obj):
+        links = Hateoas()
+        usuario = self.context['request'].user
+        if obj.status == 1:
+            if usuario.tipo_usuario == 1:
+                links.add_post('pagar_diaria', reverse('pagamento-diaria-list', kwargs={'diaria_id': obj.id}))
+        return links.to_array()

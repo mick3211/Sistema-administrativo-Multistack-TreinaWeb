@@ -7,7 +7,7 @@ from django.urls import reverse
 class Inicio(APIView):
     def get(self, request, format=None):
         links = Hateoas()
-        links.add_get('listar_srvicos', reverse('servico-list'))
+        links.add_get('listar_servicos', reverse('servico-list'))
         links.add_get('endereco_cep', reverse('endereco-cep-list'))
         links.add_get('diaristas_localidade', reverse('diaristas-localidades-list'))
         links.add_get('verificar_disponibilidade_atendimento', reverse('disponibilidade-atendimento-cidade'))
