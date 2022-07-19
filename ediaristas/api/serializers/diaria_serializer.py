@@ -18,7 +18,7 @@ class DiariaSerializer(ModelSerializer):
     links = SerializerMethodField(required=False)
 
     class Meta:
-        models = Diaria
+        model = Diaria
         fields = '__all__'
 
     
@@ -32,7 +32,7 @@ class DiariaSerializer(ModelSerializer):
         return codigo_ibge
 
     def validate_preco(self, preco):
-        servico = listar_servico_id(self.initial_data['servico'].id)
+        servico = listar_servico_id(self.initial_data['servico'])
         if servico is None:
             raise ValidationError('Servico não existe')
         valor_total = 0
@@ -51,16 +51,17 @@ class DiariaSerializer(ModelSerializer):
         raise ValidationError('Valor abaixo do valor mínimo do serviço')
     
     def validate_tempo_atendimento(self, tempo_atendimento):
-        servico = listar_servico_id(self.initial_data['servico'].id)
+        print(self.initial_data)
+        servico = listar_servico_id(self.initial_data['servico'])
         if servico is None:
             raise ValidationError('Servico não existe')
         horas_total = 0
-        horas_total += servico.horas_quarto * self.initial_data['horas_quartos']
-        horas_total += servico.horas_sala * self.initial_data['horas_salas']
-        horas_total += servico.horas_banheiro * self.initial_data['horas_banheiros']
-        horas_total += servico.horas_cozinha * self.initial_data['horas_cozinhas']
-        horas_total += servico.horas_quintal * self.initial_data['horas_quintais']
-        horas_total += servico.horas_outros * self.initial_data['horas_outros']
+        horas_total += servico.horas_quarto * self.initial_data['quantidade_quartos']
+        horas_total += servico.horas_sala * self.initial_data['quantidade_salas']
+        horas_total += servico.horas_banheiro * self.initial_data['quantidade_banheiros']
+        horas_total += servico.horas_cozinha * self.initial_data['quantidade_cozinhas']
+        horas_total += servico.horas_quintal * self.initial_data['quantidade_quintais']
+        horas_total += servico.horas_outros * self.initial_data['quantidade_outros']
         if tempo_atendimento != horas_total:
             raise ValidationError('Valores não correspondem')
         return tempo_atendimento
@@ -75,8 +76,8 @@ class DiariaSerializer(ModelSerializer):
     def create(self, validated_data):
         servico = listar_servico_id(validated_data['servico'].id)
         valor_comissao = validated_data['preco'] * servico.porcentagem_comissao / 100
-        client_id = self.context['request'].user.id
-        diaria = Diaria.objects.create(client_id=client_id, valor_comissao=valor_comissao, **validated_data)
+        cliente_id = self.context['request'].user.id
+        diaria = Diaria.objects.create(cliente_id=cliente_id, valor_comissao=valor_comissao, **validated_data)
         return diaria
 
     def get_links(self, obj):

@@ -12,4 +12,4 @@ def usuario_cadastrado(sender, instance, created, **kwargs):
         mensagem_html = render_to_string('email_cadastro.html', {'usuario': instance})
         send_mail(assunto, corpo, remetente, destino, html_message=mensagem_html)
 
-post_save.connect(usuario_cadastrado, sender=Usuario)
+# post_save.connect(usuario_cadastrado, sender=Usuario)
