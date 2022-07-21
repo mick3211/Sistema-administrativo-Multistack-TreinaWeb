@@ -4,6 +4,7 @@ from ..models import Diaria, Usuario
 from administracao.services.servico_service import listar_servico_id
 from ..services.cidades_atendimento_service import verificar_disponibilidade_cidade, buscar_cidade_ibge
 from ..hateoas import Hateoas
+from django.utils import timezone
 
 
 class UsuarioDiariaSerializer(ModelSerializer):
@@ -25,6 +26,10 @@ class DiariaSerializer(ModelSerializer):
     def validate(self, attrs):
         if not verificar_disponibilidade_cidade(attrs['cep']):
             raise ValidationError('Não há diaristas para o CEP informado')
+        qtd_comodos = attrs['quantidade_quartos'] + attrs['quantidade_salas'] + attrs['quantidade_cozinhas'] + \
+            attrs['quantidade_banheiros'] + attrs['quantidade_outros']
+        if qtd_comodos == 0:
+            raise ValidationError('A diária deve ter, pelo menos, um cômodo')
         return attrs
 
     def validate_codigo_ibge(self, codigo_ibge):
@@ -43,9 +48,9 @@ class DiariaSerializer(ModelSerializer):
         valor_total += servico.valor_quintal * self.initial_data['quantidade_quintais']
         valor_total += servico.valor_outros * self.initial_data['quantidade_outros']
         if preco >= servico.valor_minimo:
-            if valor_total < servico.valor_minimo:
-                return servico.valor_minimo
             if preco == valor_total:
+                # if valor_total < servico.valor_minimo:
+                #     return servico.valor_minimo
                 return preco
             raise ValidationError('Valor não corresponde ao serviço contratado')
         raise ValidationError('Valor abaixo do valor mínimo do serviço')
@@ -71,6 +76,8 @@ class DiariaSerializer(ModelSerializer):
             raise ValidationError('Horário de início não pode ser menor que 06:00')
         if (data_atendimento.hour + self.initial_data['tempo_atendimento']) > 22:
             raise ValidationError('Horário de atendimento não pode passar das 22:00')
+        if data_atendimento <= (timezone.now() + timezone.timedelta(hours=48)):
+            ValidationError('A data de atendimento deve ser, no mínimo, 48h da hora atual')
         return data_atendimento
     
     def create(self, validated_data):
@@ -86,4 +93,6 @@ class DiariaSerializer(ModelSerializer):
         if obj.status == 1:
             if usuario.tipo_usuario == 1:
                 links.add_post('pagar_diaria', reverse('pagamento-diaria-list', kwargs={'diaria_id': obj.id}))
+        else:
+            links.add_get('self', reverse('diaria-detail', kwargs={'diaria_id': obj.id}))
         return links.to_array()
