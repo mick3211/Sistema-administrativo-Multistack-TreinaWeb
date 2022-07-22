@@ -100,5 +100,4 @@ class DiariaSerializer(ModelSerializer):
 
     def get_nome_servico(self, obj):
         servico = listar_servico_id(obj.servico.id)
-        print(servico.nome)
         return servico.nome
