@@ -17,6 +17,7 @@ class DiariaSerializer(ModelSerializer):
     cliente = UsuarioDiariaSerializer(read_only=True)
     valor_comissao = DecimalField(read_only=True, max_digits=5, decimal_places=2)
     links = SerializerMethodField(required=False)
+    nome_servico = SerializerMethodField(required=False)
 
     class Meta:
         model = Diaria
@@ -96,3 +97,8 @@ class DiariaSerializer(ModelSerializer):
         else:
             links.add_get('self', reverse('diaria-detail', kwargs={'diaria_id': obj.id}))
         return links.to_array()
+
+    def get_nome_servico(self, obj):
+        servico = listar_servico_id(obj.servico.id)
+        print(servico.nome)
+        return servico.nome
