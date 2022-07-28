@@ -1,4 +1,3 @@
-from pkg_resources import require
 from rest_framework import serializers
 from ..models import Usuario
 from django.contrib.auth.hashers import make_password
